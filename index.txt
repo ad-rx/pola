@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 Game Kuis Pola Bilangan Ceria! 🌟</title>
+<style>
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    box-sizing: border-box;
+    background-color: #FFEAA7;
+    background-image:
+      radial-gradient(#FDCB6E 15%, transparent 16%),
+      radial-gradient(#FDCB6E 15%, transparent 16%);
+    background-size: 60px 60px;
+    background-position: 0 0, 30px 30px;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow: hidden;
+  }
+  #game {
+    width: min(900px, 96vw, 96vh);
+    height: auto;
+    display: block;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  noscript {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #FFEAA7;
+    font-weight: bold;
+    color: #D63031;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="game" width="900" height="900" aria-label="Kuis Pola Bilangan"></canvas>
+<noscript>Aktifkan JavaScript di browser untuk memainkan kuis ini.</noscript>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+     1. DATA SOAL (20 SOAL)
+     ========================================================= */
+  const quizData = [
+    // ---------- SOAL 1-10 (SD & SMP) ----------
+    {
+      level: '🧒 LEVEL NEWBIE',
+      question: 'Perhatikan barisan bilangan berikut: 2, 4, 6, 8, ... Berapakah bilangan selanjutnya?',
+      options: [
+        { text: 'A. 9',  isCorrect: false, reason: 'Angka 9 bukan bilangan genap, jadi tidak cocok dengan pola ini.' },
+        { text: 'B. 12', isCorrect: false, reason: 'Angka 12 melompati satu tahap, karena pola ini selalu bertambah 2.' },
+        { text: 'C. 10', isCorrect: true,  reason: 'Setiap bilangan bertambah 2 dari bilangan sebelumnya, jadi 8 + 2 = 10.' },
+        { text: 'D. 14', isCorrect: false, reason: 'Angka 14 terlalu besar, berarti melompat 6 langkah dari angka 8.' }
+      ],
+      hint: 'Hitung lompatannya: dari 2 ke 4 ditambah berapa? Dari 4 ke 6 ditambah berapa? Teruskan pola penjumlahannya!'
+    },
+    {
+      level: '🧒 LEVEL NEWBIE',
+      question: 'Tentukan bilangan yang tepat untuk melengkapi barisan menurun berikut: 20, 17, 14, 11, ...',
+      options: [
+        { text: 'A. 8',  isCorrect: true,  reason: 'Barisan ini berkurang 3 setiap langkah, jadi 11 − 3 = 8.' },
+        { text: 'B. 9',  isCorrect: false, reason: 'Jika 11 dikurangi 3, hasilnya 8, bukan 9.' },
+        { text: 'C. 7',  isCorrect: false, reason: 'Angka 7 berarti dikurangi 4, padahal aturannya dikurangi 3.' },
+        { text: 'D. 10', isCorrect: false, reason: 'Angka 10 hanya berkurang 1, tidak sesuai pola.' }
+      ],
+      hint: 'Lihat selisihnya: 20 ke 17 turun berapa? 17 ke 14 turun berapa? Selisihnya tetap sama, lho!'
+    },
+    {
+      level: '🧒 LEVEL NEWBIE',
+      question: 'Lanjutkan pola bilangan kelipatan berikut: 5, 10, 15, 20, ...',
+      options: [
+        { text: 'A. 20', isCorrect: false, reason: 'Angka 20 sudah ada di barisan, tidak mungkin berulang.' },
+        { text: 'B. 22', isCorrect: false, reason: 'Angka 22 bukan kelipatan 5.' },
+        { text: 'C. 30', isCorrect: false, reason: 'Angka 30 melompati angka 25.' },
+        { text: 'D. 25', isCorrect: true,  reason: 'Bilangan ini bertambah 5 setiap langkah, jadi 20 + 5 = 25.' }
+      ],
+      hint: 'Ini barisan kelipatan 5. Setelah 20, kelipatan 5 berikutnya adalah ...'
+    },
+    {
+      level: '🧒 LEVEL NEWBIE',
+      question: 'Perhatikan pola berikut: 2, 6, 10, 14, ... Bilangan berikutnya adalah ...',
+      options: [
+        { text: 'A. 16', isCorrect: false, reason: 'Angka 16 berarti bertambah 2, padahal polanya bertambah 4.' },
+        { text: 'B. 18', isCorrect: true,  reason: 'Setiap bilangan bertambah 4, jadi 14 + 4 = 18.' },
+        { text: 'C. 20', isCorrect: false, reason: 'Angka 20 berarti bertambah 6, terlalu besar.' },
+        { text: 'D. 22', isCorrect: false, reason: 'Angka 22 melompati dua tahap sekaligus.' }
+      ],
+      hint: 'Cari selisih antar bilangan: 6 − 2 = 4, 10 − 6 = 4, 14 − 10 = 4. Berarti tinggal ditambah 4 lagi!'
+    },
+    {
+      level: '🧒 LEVEL NEWBIE',
+      question: 'Barisan bilangan menurun: 100, 90, 80, 70, ... Bilangan selanjutnya adalah ...',
+      options: [
+        { text: 'A. 50', isCorrect: false, reason: 'Angka 50 berarti turun 20, padahal polanya turun 10.' },
+        { text: 'B. 55', isCorrect: false, reason: 'Angka 55 bukan kelipatan 10, tidak sesuai pola.' },
+        { text: 'C. 65', isCorrect: false, reason: 'Angka 65 hanya turun 5 dari 70.' },
+        { text: 'D. 60', isCorrect: true,  reason: 'Setiap bilangan berkurang 10, jadi 70 − 10 = 60.' }
+      ],
+      hint: 'Setiap langkah berkurang 10. Dari 70 dikurangi 10 hasilnya berapa?'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan pola bilangan kuadrat berikut: 1, 4, 9, 16, ... Bilangan selanjutnya adalah ...',
+      options: [
+        { text: 'A. 25', isCorrect: true,  reason: 'Pola ini adalah kuadrat bilangan asli: 1², 2², 3², 4², maka selanjutnya 5² = 25.' },
+        { text: 'B. 20', isCorrect: false, reason: '20 bukan bilangan kuadrat sempurna.' },
+        { text: 'C. 24', isCorrect: false, reason: 'Selisih 16 ke 24 hanya 8, padahal selisih polanya makin besar (menjadi 9).' },
+        { text: 'D. 36', isCorrect: false, reason: '36 adalah 6², jadi melompati 5² = 25.' }
+      ],
+      hint: 'Coba tulis ulang sebagai kuadrat: 1 = 1², 4 = 2², 9 = 3², 16 = 4². Lanjutannya 5² = ...'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan barisan berikut: 1, 1, 2, 3, 5, 8, ... Bilangan selanjutnya adalah ...',
+      options: [
+        { text: 'A. 11', isCorrect: false, reason: '11 bukan hasil penjumlahan dua suku sebelumnya (5 + 8 = 13).' },
+        { text: 'B. 13', isCorrect: true,  reason: 'Setiap suku adalah jumlah dua suku sebelumnya: 5 + 8 = 13.' },
+        { text: 'C. 12', isCorrect: false, reason: '12 bukan hasil dari 5 + 8.' },
+        { text: 'D. 15', isCorrect: false, reason: '15 terlalu besar, seharusnya 5 + 8 = 13.' }
+      ],
+      hint: 'Jumlahkan dua bilangan sebelumnya: 1 + 1 = 2, 1 + 2 = 3, 2 + 3 = 5, 3 + 5 = 8. Jadi 5 + 8 = ...'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan pola: 2, 6, 12, 20, 30, ... Bilangan berikutnya adalah ...',
+      options: [
+        { text: 'A. 36', isCorrect: false, reason: 'Selisih 30 ke 36 hanya 6, padahal selisih sebelumnya bertambah terus.' },
+        { text: 'B. 40', isCorrect: false, reason: '40 belum sesuai, karena selisih berikutnya harus 12.' },
+        { text: 'C. 42', isCorrect: true,  reason: 'Selisihnya bertambah 2: +4, +6, +8, +10, maka berikutnya +12 sehingga 30 + 12 = 42.' },
+        { text: 'D. 44', isCorrect: false, reason: '44 berarti selisihnya 14, terlalu besar.' }
+      ],
+      hint: 'Lihat selisihnya: 6−2=4, 12−6=6, 20−12=8, 30−20=10. Selisihnya naik 2 terus. Selanjutnya +12!'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Lanjutkan barisan geometri berikut: 3, 6, 12, 24, ...',
+      options: [
+        { text: 'A. 48', isCorrect: true,  reason: 'Setiap suku dikali 2, jadi 24 × 2 = 48.' },
+        { text: 'B. 36', isCorrect: false, reason: '36 berarti ditambah 12, bukan dikali 2.' },
+        { text: 'C. 30', isCorrect: false, reason: '30 hanya ditambah 6, tidak sesuai pola perkalian.' },
+        { text: 'D. 54', isCorrect: false, reason: '54 tidak sesuai, hasil yang benar adalah 24 × 2 = 48.' }
+      ],
+      hint: 'Bandingkan dengan pembagian: 6 : 3 = 2, 12 : 6 = 2, 24 : 12 = 2. Berarti setiap suku dikali 2.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan barisan menurun berikut: 81, 27, 9, 3, ... Bilangan selanjutnya adalah ...',
+      options: [
+        { text: 'A. 0', isCorrect: false, reason: 'Polanya bukan dikurangi, melainkan dibagi 3.' },
+        { text: 'B. 3', isCorrect: false, reason: 'Angka 3 sudah ada di barisan sebelumnya.' },
+        { text: 'C. 1', isCorrect: true,  reason: 'Setiap suku dibagi 3, jadi 3 : 3 = 1.' },
+        { text: 'D. 2', isCorrect: false, reason: '2 bukan hasil pembagian 3 dengan 3.' }
+      ],
+      hint: 'Cek pembagiannya: 81 : 3 = 27, 27 : 3 = 9, 9 : 3 = 3. Jadi 3 : 3 = ...'
+    },
+
+    // ---------- SOAL 11-20 (HOTS) ----------
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Diketahui barisan bilangan: 3, 4, 7, 11, 18, 29, ... Suku ke-9 dari barisan ini adalah...',
+      options: [
+        { text: 'A. 47', isCorrect: false, reason: '47 adalah suku ke-7, bukan suku ke-9.' },
+        { text: 'B. 76', isCorrect: false, reason: '76 adalah suku ke-8.' },
+        { text: 'C. 123', isCorrect: true, reason: 'Pola ini adalah jumlah dua suku sebelumnya: 3+4=7, 4+7=11, 7+11=18, 11+18=29, 18+29=47, 29+47=76, 47+76=123.' },
+        { text: 'D. 199', isCorrect: false, reason: '199 terlalu besar, melompati beberapa suku.' }
+      ],
+      hint: 'Setiap suku adalah jumlah dua suku sebelumnya. Lanjutkan penjumlahan dari 29.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan barisan tingkat tiga berikut: 1, 4, 11, 26, 53, ... Berapakah suku ke-6 dari barisan tersebut?',
+      options: [
+        { text: 'A. 86', isCorrect: false, reason: '86 belum sesuai dengan pola selisih bertingkat.' },
+        { text: 'B. 95', isCorrect: true,  reason: 'Berdasarkan perhitungan pola tingkat tiga, diperoleh U6 = 95.' },
+        { text: 'C. 102', isCorrect: false, reason: '102 melompati pola selisih.' },
+        { text: 'D. 114', isCorrect: false, reason: '114 terlalu besar untuk suku ke-6.' }
+      ],
+      hint: 'Perhatikan selisih antar suku: 3, 7, 15, 27. Selisih kedua: 4, 8, 12. Selisih ketiga: 4, 4. Lanjutkan pola selisihnya.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Diberikan sebuah barisan bersilang: 2, 3, 4, 6, 8, 12, 16, 24, ... Tentukan dua angka berikutnya secara berurutan!',
+      options: [
+        { text: 'A. 32 dan 48', isCorrect: true,  reason: 'Pola bersilang: suku ganjil dikali 2 (2,4,8,16,32) dan suku genap dikali 2 (3,6,12,24,48).' },
+        { text: 'B. 20 dan 36', isCorrect: false, reason: '20 dan 36 tidak mengikuti pola perkalian 2.' },
+        { text: 'C. 32 dan 36', isCorrect: false, reason: '36 bukan hasil perkalian 2 dari 24.' },
+        { text: 'D. 24 dan 48', isCorrect: false, reason: '24 sudah ada, seharusnya 32.' }
+      ],
+      hint: 'Pisahkan menjadi dua barisan: posisi ganjil dan posisi genap. Keduanya dikali 2.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Suku ke-n dari suatu barisan ditentukan oleh rumus Un = 2n^2 - 3n + 5. Selisih antara suku ke-6 dan suku ke-4 adalah...',
+      options: [
+        { text: 'A. 24', isCorrect: false, reason: 'Hasil perhitungan yang benar adalah 34.' },
+        { text: 'B. 30', isCorrect: false, reason: '30 bukan selisih U6 dan U4.' },
+        { text: 'C. 34', isCorrect: true,  reason: 'U6 = 2(6^2) - 3(6) + 5 = 72 - 18 + 5 = 59. U4 = 2(4^2) - 3(4) + 5 = 32 - 12 + 5 = 25. Selisih = 59 - 25 = 34.' },
+        { text: 'D. 42', isCorrect: false, reason: '42 terlalu besar.' }
+      ],
+      hint: 'Hitung U6 dan U4 dengan memasukkan n = 6 dan n = 4 ke rumus, lalu kurangkan.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan pola bilangan pecahan berikut: 1/2, 3/4, 5/8, 7/16, ... Berapakah nilai dari suku ke-7 (U7)?',
+      options: [
+        { text: 'A. 9/32', isCorrect: false, reason: 'Pembilang seharusnya 13, bukan 9.' },
+        { text: 'B. 11/64', isCorrect: false, reason: 'Pembilang seharusnya 13.' },
+        { text: 'C. 13/128', isCorrect: true,  reason: 'Pembilang adalah bilangan ganjil: 1,3,5,7,9,11,13. Penyebut adalah 2^n: 2,4,8,16,32,64,128. Jadi U7 = 13/128.' },
+        { text: 'D. 15/256', isCorrect: false, reason: 'Pembilang 15 melompati 13.' }
+      ],
+      hint: 'Perhatikan pembilangnya naik 2, penyebutnya dikali 2 setiap suku.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Dalam sebuah gedung pertunjukan, baris pertama berisi 15 kursi, baris kedua 19 kursi, baris ketiga 23 kursi, dan seterusnya bertambah tetap. Jumlah seluruh kursi jika gedung memiliki 20 baris adalah...',
+      options: [
+        { text: 'A. 920', isCorrect: false, reason: 'Hasil perhitungan yang benar adalah 1.060.' },
+        { text: 'B. 1.060', isCorrect: true,  reason: 'Barisan aritmatika dengan a=15, b=4, n=20. Sn = n/2 (2a + (n-1)b) = 10 (30 + 19*4) = 10 (30 + 76) = 10 * 106 = 1.060.' },
+        { text: 'C. 1.120', isCorrect: false, reason: '1.120 bukan hasil yang tepat.' },
+        { text: 'D. 2.120', isCorrect: false, reason: '2.120 terlalu besar.' }
+      ],
+      hint: 'Gunakan rumus jumlah n suku pertama deret aritmatika: Sn = n/2 (2a + (n-1)b).'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Sebuah bakteri membelah diri menjadi 3 setiap 20 menit. Jika mula-mula ada 5 bakteri, berapakah banyak bakteri setelah waktu berjalan selama 2 jam?',
+      options: [
+        { text: 'A. 3.645', isCorrect: true,  reason: '2 jam = 120 menit = 6 periode 20 menit. Banyak bakteri = 5 × 3^6 = 5 × 729 = 3.645.' },
+        { text: 'B. 1.215', isCorrect: false, reason: '1.215 hanya 5 × 3^5.' },
+        { text: 'C. 405', isCorrect: false, reason: '405 hanya 5 × 3^4.' },
+        { text: 'D. 10.935', isCorrect: false, reason: '10.935 = 5 × 3^7, terlalu besar.' }
+      ],
+      hint: 'Hitung berapa kali pembelahan terjadi dalam 2 jam, lalu kalikan dengan pangkat 3.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Diketahui susunan bulatan membentuk pola persegi panjang. Pola ke-1 = 2, pola ke-2 = 6, pola ke-3 = 12, pola ke-4 = 20. Berapakah jumlah titik bulatan pada suku ke-25 (U25)?',
+      options: [
+        { text: 'A. 600', isCorrect: false, reason: '600 bukan hasil dari 25×26.' },
+        { text: 'B. 625', isCorrect: false, reason: '625 adalah 25², bukan pola ini.' },
+        { text: 'C. 650', isCorrect: true,  reason: 'Pola membentuk n(n+1). U25 = 25 × 26 = 650.' },
+        { text: 'D. 700', isCorrect: false, reason: '700 terlalu besar.' }
+      ],
+      hint: 'Perhatikan pola: 1×2=2, 2×3=6, 3×4=12, 4×5=20. Jadi Un = n(n+1).'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Tentukan angka satuan (digit paling belakang) dari suku ke-100 jika deret perpangkatannya adalah 3^1, 3^2, 3^3, 3^4, 3^5, ... !',
+      options: [
+        { text: 'A. 3', isCorrect: false, reason: '3 adalah satuan dari 3^1, 3^5, ...' },
+        { text: 'B. 9', isCorrect: false, reason: '9 adalah satuan dari 3^2, 3^6, ...' },
+        { text: 'C. 7', isCorrect: false, reason: '7 adalah satuan dari 3^3, 3^7, ...' },
+        { text: 'D. 1', isCorrect: true,  reason: 'Angka satuan 3^n berulang setiap 4: 3,9,7,1. Karena 100 habis dibagi 4, maka angka satuannya 1.' }
+      ],
+      hint: 'Perhatikan pola angka satuan dari 3^1, 3^2, 3^3, 3^4. Berulang setiap 4 pangkat.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan barisan tingkat dua berikut: 0, 4, 10, 18, 28, ... Nilai dari suku ke-50 (U50) dari barisan tersebut adalah...',
+      options: [
+        { text: 'A. 2.450', isCorrect: false, reason: '2.450 bukan hasil yang tepat.' },
+        { text: 'B. 2.550', isCorrect: true,  reason: 'Barisan ini memiliki selisih bertingkat dua dengan rumus Un = n^2 + n. Untuk n=50, U50 = 50^2 + 50 = 2500 + 50 = 2550.' },
+        { text: 'C. 2.600', isCorrect: false, reason: '2.600 terlalu besar.' },
+        { text: 'D. 2.750', isCorrect: false, reason: '2.750 tidak sesuai pola.' }
+      ],
+      hint: 'Cari selisih antar suku: 4,6,8,10. Selisih kedua konstan 2. Gunakan rumus Un = n^2 + n.'
+    }
+  ];
+
+  /* =========================================================
+     2. KONSTANTA TAMPILAN
+     ========================================================= */
+  const W = 900, H = 900;
+  const CARD = { x: 18, y: 18, w: 864, h: 864, r: 30 };
+  const PAD  = 32;
+  const LEFT = CARD.x + PAD;
+  const RIGHT = CARD.x + CARD.w - PAD;
+  const CW = RIGHT - LEFT;
+
+  const FAMILY = '"Comic Sans MS","Chalkboard SE","Trebuchet MS","Segoe UI",system-ui,sans-serif';
+  const font = (size, weight) => (weight || 'normal') + ' ' + size + 'px ' + FAMILY;
+
+  const CLR = {
+    primary: '#6C5CE7',
+    primaryDark: '#4834D4',
+    text: '#2D3436',
+    success: '#2ECC71',
+    danger: '#FF7675'
+  };
+
+  /* =========================================================
+     3. ELEMEN & STATE
+     ========================================================= */
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+
+  const state = {
+    screen: 'quiz',
+    index: 0,
+    score: 0,
+    answered: false,
+    selected: -1,
+    showHint: false,
+    hover: -1
+  };
+
+  let hit = { options: [], hint: null, next: null, restart: null };
+
+  /* =========================================================
+     4. HELPER GAMBAR
+     ========================================================= */
+  function rr(x, y, w, h, r) {
+    const rad = Math.max(0, Math.min(r, w / 2, h / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + rad, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rad);
+    ctx.arcTo(x + w, y + h, x, y + h, rad);
+    ctx.arcTo(x, y + h, x, y, rad);
+    ctx.arcTo(x, y, x + w, y, rad);
+    ctx.closePath();
+  }
+
+  function wrapText(text, maxWidth, fontStr) {
+    ctx.font = fontStr;
+    const words = String(text).split(/\s+/);
+    const lines = [];
+    let line = '';
+    for (let i = 0; i < words.length; i++) {
+      const test = line ? line + ' ' + words[i] : words[i];
+      if (ctx.measureText(test).width <= maxWidth || line === '') {
+        line = test;
+      } else {
+        lines.push(line);
+        line = words[i];
+      }
+    }
+    if (line !== '') lines.push(line);
+    return lines;
+  }
+
+  function inRect(x, y, r) {
+    return !!r && x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+  }
+
+  /* =========================================================
+     5. GAMBAR UTAMA
+     ========================================================= */
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (state.screen === 'quiz') drawQuiz();
+    else drawResult();
+  }
+
+  function drawCard() {
+    rr(CARD.x, CARD.y + 12, CARD.w, CARD.h, CARD.r);
+    ctx.fillStyle = CLR.primaryDark;
+    ctx.fill();
+
+    rr(CARD.x, CARD.y, CARD.w, CARD.h, CARD.r);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = CLR.primary;
+    ctx.stroke();
+  }
+
+  function drawQuiz() {
+    const q = quizData[state.index];
+    hit = { options: [], hint: null, next: null, restart: null };
+
+    drawCard();
+
+    let y = CARD.y + PAD;
+
+    /* ---------- Header ---------- */
+    const isSD = q.level.indexOf('SD') !== -1;
+    const bh = 38;
+    ctx.font = font(17, 'bold');
+    const bw = ctx.measureText(q.level).width + 44;
+
+    rr(LEFT, y, bw, bh, bh / 2);
+    ctx.fillStyle = isSD ? '#E67E22' : '#9B59B6';
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = isSD ? '#D35400' : '#8E44AD';
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(q.level, LEFT + bw / 2, y + bh / 2 + 1);
+
+    ctx.textAlign = 'right';
+    ctx.fillStyle = CLR.primary;
+    ctx.font = font(21, 'bold');
+    ctx.fillText('Soal ' + (state.index + 1) + ' dari ' + quizData.length, RIGHT, y + bh / 2 + 1);
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    y += bh + 16;
+
+    /* ---------- Progress bar ---------- */
+    const ph = 18;
+    rr(LEFT, y, CW, ph, ph / 2);
+    ctx.fillStyle = '#DFE6E9';
+    ctx.fill();
+
+    const pct = (state.index + (state.answered ? 1 : 0)) / quizData.length;
+    if (pct > 0) {
+      ctx.save();
+      rr(LEFT, y, CW, ph, ph / 2);
+      ctx.clip();
+      const g = ctx.createLinearGradient(LEFT, 0, LEFT + CW, 0);
+      g.addColorStop(0, '#74B9FF');
+      g.addColorStop(1, '#0984E3');
+      ctx.fillStyle = g;
+      ctx.fillRect(LEFT, y, CW * pct, ph);
+      ctx.restore();
+    }
+    rr(LEFT, y, CW, ph, ph / 2);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#B2BEC3';
+    ctx.stroke();
+
+    y += ph + 22;
+
+    /* ---------- Kotak soal ---------- */
+    const qFont = font(20, 'bold');
+    const qLines = wrapText(q.question, CW - 44, qFont);
+    const qh = qLines.length * 28 + 32;
+
+    rr(LEFT, y, CW, qh, 18);
+    ctx.fillStyle = '#F7F1E3';
+    ctx.fill();
+    ctx.save();
+    ctx.setLineDash([12, 9]);
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#FFB142';
+    rr(LEFT, y, CW, qh, 18);
+    ctx.stroke();
+    ctx.restore();
+
+    ctx.fillStyle = CLR.text;
+    ctx.font = qFont;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    for (let i = 0; i < qLines.length; i++) {
+      ctx.fillText(qLines[i], LEFT + 22, y + 30 + i * 28);
+    }
+    y += qh + 20;
+
+    /* ---------- Pilihan jawaban ---------- */
+    const optH = 58, optGap = 12;
+    for (let i = 0; i < q.options.length; i++) {
+      const opt = q.options[i];
+      const oy = y + i * (optH + optGap);
+
+      let bg = '#FFFFFF', border = '#CCE3F6', txt = CLR.text, sh = '#CCE3F6';
+
+      if (state.answered) {
+        if (opt.isCorrect)          { bg = '#D4EDDA'; border = CLR.success; txt = '#155724'; sh = CLR.success; }
+        else if (i === state.selected) { bg = '#F8D7DA'; border = CLR.danger;  txt = '#721C24'; sh = CLR.danger; }
+        else                        { bg = '#F4F5F7'; border = '#DFE6E9'; txt = '#95A5A6'; sh = '#DFE6E9'; }
+      } else if (i === state.hover) {
+        bg = '#F0F7FF'; border = '#74B9FF'; sh = '#74B9FF';
+      }
+
+      rr(LEFT, oy + 6, CW, optH, 16);
+      ctx.fillStyle = sh;
+      ctx.fill();
+
+      rr(LEFT, oy, CW, optH, 16);
+      ctx.fillStyle = bg;
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = border;
+      ctx.stroke();
+
+      ctx.fillStyle = txt;
+      ctx.font = font(20, 'bold');
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(opt.text, LEFT + 26, oy + optH / 2 + 1);
+      ctx.textBaseline = 'alphabetic';
+
+      hit.options.push({ x: LEFT, y: oy, w: CW, h: optH, i: i });
+    }
+    y += q.options.length * (optH + optGap) - optGap + 20;
+
+    /* ---------- Petunjuk ATAU Umpan balik ---------- */
+    if (!state.answered) {
+      const label = state.showHint ? '🙈 Sembunyikan Petunjuk' : '💡 Butuh Bantuan? (Petunjuk)';
+      const hbh = 44;
+      ctx.font = font(16, 'bold');
+      const hbw = ctx.measureText(label).width + 46;
+
+      rr(LEFT, y + 5, hbw, hbh, hbh / 2);
+      ctx.fillStyle = '#F1C40F';
+      ctx.fill();
+
+      rr(LEFT, y, hbw, hbh, hbh / 2);
+      ctx.fillStyle = '#FFEAA7';
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#F1C40F';
+      ctx.stroke();
+
+      ctx.fillStyle = '#D35400';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, LEFT + hbw / 2, y + hbh / 2 + 1);
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'alphabetic';
+
+      hit.hint = { x: LEFT, y: y, w: hbw, h: hbh + 5 };
+      y += hbh + 16;
+
+      if (state.showHint) {
+        const hFont = font(16);
+        const hLines = wrapText(q.hint, CW - 44, hFont);
+        const hh = hLines.length * 22 + 28;
+
+        rr(LEFT, y, CW, hh, 14);
+        ctx.fillStyle = '#FFF9E6';
+        ctx.fill();
+        ctx.save();
+        ctx.setLineDash([10, 8]);
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#F1C40F';
+        rr(LEFT, y, CW, hh, 14);
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.fillStyle = '#8A6D00';
+        ctx.font = hFont;
+        for (let i = 0; i < hLines.length; i++) {
+          ctx.fillText(hLines[i], LEFT + 22, y + 28 + i * 22);
+        }
+      }
+    } else {
+      const chosen = q.options[state.selected];
+      const correctOpt = q.options.filter(function (o) { return o.isCorrect; })[0];
+      const ok = !!(chosen && chosen.isCorrect);
+
+      const head = ok ? '✅ Tepat sekali!' : '❌ Belum tepat.';
+      const body = ok
+        ? chosen.reason
+        : 'Jawaban yang benar adalah ' + correctOpt.text.trim() + '. ' + correctOpt.reason;
+
+      const fbFont = font(16, 'bold');
+      const lines = wrapText(head + ' ' + body, CW - 44, fbFont);
+      const fh = lines.length * 23 + 30;
+
+      rr(LEFT, y, CW, fh, 16);
+      ctx.fillStyle = ok ? '#D4EDDA' : '#F8D7DA';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = ok ? CLR.success : CLR.danger;
+      ctx.stroke();
+
+      ctx.fillStyle = ok ? '#155724' : '#721C24';
+      ctx.font = fbFont;
+      for (let i = 0; i < lines.length; i++) {
+        ctx.fillText(lines[i], LEFT + 22, y + 29 + i * 23);
+      }
+    }
+
+    /* ---------- Footer ---------- */
+    drawFooter();
+  }
+
+  function drawFooter() {
+    const btnH = 54;
+    const btnY = CARD.y + CARD.h - PAD - btnH;
+
+    ctx.save();
+    ctx.setLineDash([8, 8]);
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#E4E7EB';
+    ctx.beginPath();
+    ctx.moveTo(LEFT, btnY - 22);
+    ctx.lineTo(RIGHT, btnY - 22);
+    ctx.stroke();
+    ctx.restore();
+
+    const label = '⭐ Skor: ' + state.score;
+    ctx.font = font(18, 'bold');
+    const sw = ctx.measureText(label).width + 44;
+    const sh = 46;
+
+    rr(LEFT, btnY + 4, sw, sh, sh / 2);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fill();
+    ctx.lineWidth = 2.5;
+    ctx.strokeStyle = '#DFE6E9';
+    ctx.stroke();
+
+    ctx.fillStyle = CLR.text;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, LEFT + sw / 2, btnY + 4 + sh / 2 + 1);
+
+    const bw = 215, bh = btnH;
+    const bx = RIGHT - bw;
+    const enabled = state.answered;
+    const isLast = state.index === quizData.length - 1;
+    const text = isLast ? 'Lihat Hasil 🏁' : 'Lanjut ➡️';
+
+    rr(bx, btnY + 6, bw, bh, 28);
+    ctx.fillStyle = enabled ? '#0E8A6A' : '#95A5A6';
+    ctx.fill();
+
+    rr(bx, btnY, bw, bh, 28);
+    ctx.fillStyle = enabled ? '#10AC84' : '#BDC3C7';
+    ctx.fill();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = font(18, 'bold');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, bx + bw / 2, btnY + bh / 2 + 1);
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+
+    hit.next = enabled ? { x: bx, y: btnY, w: bw, h: bh + 6 } : null;
+  }
+
+  function evaluation() {
+    const p = state.score / quizData.length;
+    if (p === 1)    return 'Sempurna! Kamu Master Pola Bilangan! 🌟';
+    if (p >= 0.8)   return 'Luar biasa! Pemahamanmu sangat bagus! 🎉';
+    if (p >= 0.6)   return 'Bagus! Sedikit latihan lagi pasti hebat! 👍';
+    if (p >= 0.4)   return 'Cukup baik! Ayo latihan lagi ya! 💪';
+    return 'Jangan menyerah! Coba lagi pasti bisa! 🚀';
+  }
+
+  function drawResult() {
+    hit = { options: [], hint: null, next: null, restart: null };
+    drawCard();
+
+    const cx = CARD.x + CARD.w / 2;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+
+    ctx.font = font(76);
+    ctx.fillText('🏆', cx, 175);
+
+    ctx.fillStyle = CLR.primary;
+    ctx.font = font(34, 'bold');
+    ctx.fillText('Hore! Kuis Selesai!', cx, 250);
+
+    ctx.fillStyle = '#636E72';
+    ctx.font = font(18);
+    ctx.fillText('Kamu hebat sudah menyelesaikan semua', cx, 292);
+    ctx.fillText('tantangan Pola Bilangan!', cx, 320);
+
+    const cyy = 470, r = 105;
+    const g = ctx.createRadialGradient(cx - 35, cyy - 40, 10, cx, cyy, r);
+    g.addColorStop(0, '#FF7675');
+    g.addColorStop(1, '#D63031');
+
+    ctx.beginPath();
+    ctx.arc(cx, cyy, r, 0, Math.PI * 2);
+    ctx.fillStyle = g;
+    ctx.fill();
+    ctx.lineWidth = 6;
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = font(56, 'bold');
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(state.score), cx, cyy + 3);
+    ctx.textBaseline = 'alphabetic';
+
+    ctx.fillStyle = CLR.text;
+    ctx.font = font(18, 'bold');
+    ctx.fillText('dari ' + quizData.length + ' soal', cx, cyy + r + 42);
+
+    ctx.fillStyle = CLR.primary;
+    ctx.font = font(20, 'bold');
+    ctx.fillText(evaluation(), cx, cyy + r + 88);
+
+    const bw = 250, bh = 58;
+    const bx = cx - bw / 2;
+    const by = CARD.y + CARD.h - PAD - bh;
+
+    rr(bx, by + 6, bw, bh, 29);
+    ctx.fillStyle = CLR.primaryDark;
+    ctx.fill();
+
+    rr(bx, by, bw, bh, 29);
+    ctx.fillStyle = CLR.primary;
+    ctx.fill();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = font(19, 'bold');
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Main Lagi 🔄', cx, by + bh / 2 + 1);
+    ctx.textBaseline = 'alphabetic';
+
+    hit.restart = { x: bx, y: by, w: bw, h: bh + 6 };
+  }
+
+  /* =========================================================
+     6. LOGIKA PERMAINAN
+     ========================================================= */
+  function answer(i) {
+    if (state.answered) return;
+    state.answered = true;
+    state.selected = i;
+    state.showHint = false;
+    state.hover = -1;
+    if (quizData[state.index].options[i].isCorrect) state.score++;
+    draw();
+  }
+
+  function nextQuestion() {
+    if (!state.answered) return;
+    if (state.index < quizData.length - 1) {
+      state.index++;
+      state.answered = false;
+      state.selected = -1;
+      state.showHint = false;
+      state.hover = -1;
+      draw();
+    } else {
+      state.screen = 'result';
+      draw();
+    }
+  }
+
+  function restartQuiz() {
+    state.screen = 'quiz';
+    state.index = 0;
+    state.score = 0;
+    state.answered = false;
+    state.selected = -1;
+    state.showHint = false;
+    state.hover = -1;
+    draw();
+  }
+
+  /* =========================================================
+     7. INPUT (MOUSE / TOUCH / KEYBOARD)
+     ========================================================= */
+  function pointerPos(e) {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left) * (W / r.width),
+      y: (e.clientY - r.top) * (H / r.height)
+    };
+  }
+
+  function handleClick(x, y) {
+    if (state.screen === 'result') {
+      if (inRect(x, y, hit.restart)) restartQuiz();
+      return;
+    }
+
+    if (!state.answered) {
+      for (let i = 0; i < hit.options.length; i++) {
+        if (inRect(x, y, hit.options[i])) { answer(hit.options[i].i); return; }
+      }
+    }
+
+    if (inRect(x, y, hit.hint)) {
+      state.showHint = !state.showHint;
+      draw();
+      return;
+    }
+
+    if (state.answered && inRect(x, y, hit.next)) {
+      nextQuestion();
+    }
+  }
+
+  function updateHover(x, y) {
+    let cursor = 'default';
+    let newHover = -1;
+
+    if (state.screen === 'quiz' && !state.answered) {
+      for (let i = 0; i < hit.options.length; i++) {
+        if (inRect(x, y, hit.options[i])) {
+          newHover = hit.options[i].i;
+          cursor = 'pointer';
+          break;
+        }
+      }
+    }
+
+    if (cursor === 'default' &&
+        (inRect(x, y, hit.hint) ||
+         inRect(x, y, hit.next) ||
+         inRect(x, y, hit.restart))) {
+      cursor = 'pointer';
+    }
+
+    if (newHover !== state.hover || canvas.style.cursor !== cursor) {
+      state.hover = newHover;
+      canvas.style.cursor = cursor;
+      draw();
+    }
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
+    const p = pointerPos(e);
+    handleClick(p.x, p.y);
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    const p = pointerPos(e);
+    updateHover(p.x, p.y);
+  });
+
+  canvas.addEventListener('pointerleave', function () {
+    if (state.hover !== -1) {
+      state.hover = -1;
+      canvas.style.cursor = 'default';
+      draw();
+    }
+  });
+
+  window.addEventListener('keydown', function (e) {
+    if (state.screen !== 'quiz') return;
+    if (e.key >= '1' && e.key <= '4' && !state.answered) {
+      const i = Number(e.key) - 1;
+      if (i < quizData[state.index].options.length) answer(i);
+    } else if (e.key === 'Enter' && state.answered) {
+      nextQuestion();
+    }
+  });
+
+  /* =========================================================
+     8. SETUP KANVAS (RETINA / HiDPI)
+     ========================================================= */
+  function setupCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    draw();
+  }
+
+  let lastDpr = window.devicePixelRatio || 1;
+  window.addEventListener('resize', function () {
+    const dpr = window.devicePixelRatio || 1;
+    if (dpr !== lastDpr) {
+      lastDpr = dpr;
+      setupCanvas();
+    }
+  });
+
+  setupCanvas();
+
+})();
+</script>
+
+</body>
+</html>
