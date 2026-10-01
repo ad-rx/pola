@@ -24,7 +24,6 @@
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
   }
-  /* Kanvas persegi 1:1 -> cukup atur lebar, tinggi otomatis */
   #game {
     width: min(900px, 96vw, 96vh);
     height: auto;
@@ -48,7 +47,6 @@
 <body>
 
 <canvas id="game" width="900" height="900" aria-label="Kuis Pola Bilangan"></canvas>
-
 <noscript>Aktifkan JavaScript di browser untuk memainkan kuis ini.</noscript>
 
 <script>
@@ -56,9 +54,10 @@
   'use strict';
 
   /* =========================================================
-     1. DATA SOAL
+     1. DATA SOAL (20 SOAL)
      ========================================================= */
   const quizData = [
+    // ---------- SOAL 1-10 (SD & SMP) ----------
     {
       level: '🧒 LEVEL NEWBIE',
       question: 'Perhatikan barisan bilangan berikut: 2, 4, 6, 8, ... Berapakah bilangan selanjutnya?',
@@ -168,18 +167,130 @@
         { text: 'D. 2', isCorrect: false, reason: '2 bukan hasil pembagian 3 dengan 3.' }
       ],
       hint: 'Cek pembagiannya: 81 : 3 = 27, 27 : 3 = 9, 9 : 3 = 3. Jadi 3 : 3 = ...'
+    },
+
+    // ---------- SOAL 11-20 (HOTS) ----------
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Diketahui barisan bilangan: 3, 4, 7, 11, 18, 29, ... Suku ke-9 dari barisan ini adalah...',
+      options: [
+        { text: 'A. 47', isCorrect: false, reason: '47 adalah suku ke-7, bukan suku ke-9.' },
+        { text: 'B. 76', isCorrect: false, reason: '76 adalah suku ke-8.' },
+        { text: 'C. 123', isCorrect: true, reason: 'Pola ini adalah jumlah dua suku sebelumnya: 3+4=7, 4+7=11, 7+11=18, 11+18=29, 18+29=47, 29+47=76, 47+76=123.' },
+        { text: 'D. 199', isCorrect: false, reason: '199 terlalu besar, melompati beberapa suku.' }
+      ],
+      hint: 'Setiap suku adalah jumlah dua suku sebelumnya. Lanjutkan penjumlahan dari 29.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan barisan tingkat tiga berikut: 1, 4, 11, 26, 53, ... Berapakah suku ke-6 dari barisan tersebut?',
+      options: [
+        { text: 'A. 86', isCorrect: false, reason: '86 belum sesuai dengan pola selisih bertingkat.' },
+        { text: 'B. 95', isCorrect: true,  reason: 'Berdasarkan perhitungan pola tingkat tiga, diperoleh U6 = 95.' },
+        { text: 'C. 102', isCorrect: false, reason: '102 melompati pola selisih.' },
+        { text: 'D. 114', isCorrect: false, reason: '114 terlalu besar untuk suku ke-6.' }
+      ],
+      hint: 'Perhatikan selisih antar suku: 3, 7, 15, 27. Selisih kedua: 4, 8, 12. Selisih ketiga: 4, 4. Lanjutkan pola selisihnya.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Diberikan sebuah barisan bersilang: 2, 3, 4, 6, 8, 12, 16, 24, ... Tentukan dua angka berikutnya secara berurutan!',
+      options: [
+        { text: 'A. 32 dan 48', isCorrect: true,  reason: 'Pola bersilang: suku ganjil dikali 2 (2,4,8,16,32) dan suku genap dikali 2 (3,6,12,24,48).' },
+        { text: 'B. 20 dan 36', isCorrect: false, reason: '20 dan 36 tidak mengikuti pola perkalian 2.' },
+        { text: 'C. 32 dan 36', isCorrect: false, reason: '36 bukan hasil perkalian 2 dari 24.' },
+        { text: 'D. 24 dan 48', isCorrect: false, reason: '24 sudah ada, seharusnya 32.' }
+      ],
+      hint: 'Pisahkan menjadi dua barisan: posisi ganjil dan posisi genap. Keduanya dikali 2.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Suku ke-n dari suatu barisan ditentukan oleh rumus Un = 2n^2 - 3n + 5. Selisih antara suku ke-6 dan suku ke-4 adalah...',
+      options: [
+        { text: 'A. 24', isCorrect: false, reason: 'Hasil perhitungan yang benar adalah 34.' },
+        { text: 'B. 30', isCorrect: false, reason: '30 bukan selisih U6 dan U4.' },
+        { text: 'C. 34', isCorrect: true,  reason: 'U6 = 2(6^2) - 3(6) + 5 = 72 - 18 + 5 = 59. U4 = 2(4^2) - 3(4) + 5 = 32 - 12 + 5 = 25. Selisih = 59 - 25 = 34.' },
+        { text: 'D. 42', isCorrect: false, reason: '42 terlalu besar.' }
+      ],
+      hint: 'Hitung U6 dan U4 dengan memasukkan n = 6 dan n = 4 ke rumus, lalu kurangkan.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan pola bilangan pecahan berikut: 1/2, 3/4, 5/8, 7/16, ... Berapakah nilai dari suku ke-7 (U7)?',
+      options: [
+        { text: 'A. 9/32', isCorrect: false, reason: 'Pembilang seharusnya 13, bukan 9.' },
+        { text: 'B. 11/64', isCorrect: false, reason: 'Pembilang seharusnya 13.' },
+        { text: 'C. 13/128', isCorrect: true,  reason: 'Pembilang adalah bilangan ganjil: 1,3,5,7,9,11,13. Penyebut adalah 2^n: 2,4,8,16,32,64,128. Jadi U7 = 13/128.' },
+        { text: 'D. 15/256', isCorrect: false, reason: 'Pembilang 15 melompati 13.' }
+      ],
+      hint: 'Perhatikan pembilangnya naik 2, penyebutnya dikali 2 setiap suku.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Dalam sebuah gedung pertunjukan, baris pertama berisi 15 kursi, baris kedua 19 kursi, baris ketiga 23 kursi, dan seterusnya bertambah tetap. Jumlah seluruh kursi jika gedung memiliki 20 baris adalah...',
+      options: [
+        { text: 'A. 920', isCorrect: false, reason: 'Hasil perhitungan yang benar adalah 1.060.' },
+        { text: 'B. 1.060', isCorrect: true,  reason: 'Barisan aritmatika dengan a=15, b=4, n=20. Sn = n/2 (2a + (n-1)b) = 10 (30 + 19*4) = 10 (30 + 76) = 10 * 106 = 1.060.' },
+        { text: 'C. 1.120', isCorrect: false, reason: '1.120 bukan hasil yang tepat.' },
+        { text: 'D. 2.120', isCorrect: false, reason: '2.120 terlalu besar.' }
+      ],
+      hint: 'Gunakan rumus jumlah n suku pertama deret aritmatika: Sn = n/2 (2a + (n-1)b).'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Sebuah bakteri membelah diri menjadi 3 setiap 20 menit. Jika mula-mula ada 5 bakteri, berapakah banyak bakteri setelah waktu berjalan selama 2 jam?',
+      options: [
+        { text: 'A. 3.645', isCorrect: true,  reason: '2 jam = 120 menit = 6 periode 20 menit. Banyak bakteri = 5 × 3^6 = 5 × 729 = 3.645.' },
+        { text: 'B. 1.215', isCorrect: false, reason: '1.215 hanya 5 × 3^5.' },
+        { text: 'C. 405', isCorrect: false, reason: '405 hanya 5 × 3^4.' },
+        { text: 'D. 10.935', isCorrect: false, reason: '10.935 = 5 × 3^7, terlalu besar.' }
+      ],
+      hint: 'Hitung berapa kali pembelahan terjadi dalam 2 jam, lalu kalikan dengan pangkat 3.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Diketahui susunan bulatan membentuk pola persegi panjang. Pola ke-1 = 2, pola ke-2 = 6, pola ke-3 = 12, pola ke-4 = 20. Berapakah jumlah titik bulatan pada suku ke-25 (U25)?',
+      options: [
+        { text: 'A. 600', isCorrect: false, reason: '600 bukan hasil dari 25×26.' },
+        { text: 'B. 625', isCorrect: false, reason: '625 adalah 25², bukan pola ini.' },
+        { text: 'C. 650', isCorrect: true,  reason: 'Pola membentuk n(n+1). U25 = 25 × 26 = 650.' },
+        { text: 'D. 700', isCorrect: false, reason: '700 terlalu besar.' }
+      ],
+      hint: 'Perhatikan pola: 1×2=2, 2×3=6, 3×4=12, 4×5=20. Jadi Un = n(n+1).'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Tentukan angka satuan (digit paling belakang) dari suku ke-100 jika deret perpangkatannya adalah 3^1, 3^2, 3^3, 3^4, 3^5, ... !',
+      options: [
+        { text: 'A. 3', isCorrect: false, reason: '3 adalah satuan dari 3^1, 3^5, ...' },
+        { text: 'B. 9', isCorrect: false, reason: '9 adalah satuan dari 3^2, 3^6, ...' },
+        { text: 'C. 7', isCorrect: false, reason: '7 adalah satuan dari 3^3, 3^7, ...' },
+        { text: 'D. 1', isCorrect: true,  reason: 'Angka satuan 3^n berulang setiap 4: 3,9,7,1. Karena 100 habis dibagi 4, maka angka satuannya 1.' }
+      ],
+      hint: 'Perhatikan pola angka satuan dari 3^1, 3^2, 3^3, 3^4. Berulang setiap 4 pangkat.'
+    },
+    {
+      level: '🧑‍🎓 LEVEL SMP',
+      question: 'Perhatikan barisan tingkat dua berikut: 0, 4, 10, 18, 28, ... Nilai dari suku ke-50 (U50) dari barisan tersebut adalah...',
+      options: [
+        { text: 'A. 2.450', isCorrect: false, reason: '2.450 bukan hasil yang tepat.' },
+        { text: 'B. 2.550', isCorrect: true,  reason: 'Barisan ini memiliki selisih bertingkat dua dengan rumus Un = n^2 + n. Untuk n=50, U50 = 50^2 + 50 = 2500 + 50 = 2550.' },
+        { text: 'C. 2.600', isCorrect: false, reason: '2.600 terlalu besar.' },
+        { text: 'D. 2.750', isCorrect: false, reason: '2.750 tidak sesuai pola.' }
+      ],
+      hint: 'Cari selisih antar suku: 4,6,8,10. Selisih kedua konstan 2. Gunakan rumus Un = n^2 + n.'
     }
   ];
 
   /* =========================================================
      2. KONSTANTA TAMPILAN
      ========================================================= */
-  const W = 900, H = 900;                 // ukuran logis kanvas
+  const W = 900, H = 900;
   const CARD = { x: 18, y: 18, w: 864, h: 864, r: 30 };
   const PAD  = 32;
-  const LEFT = CARD.x + PAD;              // 50
-  const RIGHT = CARD.x + CARD.w - PAD;    // 850
-  const CW = RIGHT - LEFT;                // 800
+  const LEFT = CARD.x + PAD;
+  const RIGHT = CARD.x + CARD.w - PAD;
+  const CW = RIGHT - LEFT;
 
   const FAMILY = '"Comic Sans MS","Chalkboard SE","Trebuchet MS","Segoe UI",system-ui,sans-serif';
   const font = (size, weight) => (weight || 'normal') + ' ' + size + 'px ' + FAMILY;
@@ -199,7 +310,7 @@
   const ctx = canvas.getContext('2d');
 
   const state = {
-    screen: 'quiz',   // 'quiz' | 'result'
+    screen: 'quiz',
     index: 0,
     score: 0,
     answered: false,
@@ -475,9 +586,8 @@
 
   function drawFooter() {
     const btnH = 54;
-    const btnY = CARD.y + CARD.h - PAD - btnH;   // 796
+    const btnY = CARD.y + CARD.h - PAD - btnH;
 
-    /* garis pemisah */
     ctx.save();
     ctx.setLineDash([8, 8]);
     ctx.lineWidth = 2.5;
@@ -488,7 +598,6 @@
     ctx.stroke();
     ctx.restore();
 
-    /* skor */
     const label = '⭐ Skor: ' + state.score;
     ctx.font = font(18, 'bold');
     const sw = ctx.measureText(label).width + 44;
@@ -506,7 +615,6 @@
     ctx.textBaseline = 'middle';
     ctx.fillText(label, LEFT + sw / 2, btnY + 4 + sh / 2 + 1);
 
-    /* tombol lanjut */
     const bw = 215, bh = btnH;
     const bx = RIGHT - bw;
     const enabled = state.answered;
@@ -562,7 +670,6 @@
     ctx.fillText('Kamu hebat sudah menyelesaikan semua', cx, 292);
     ctx.fillText('tantangan Pola Bilangan!', cx, 320);
 
-    /* lingkaran skor */
     const cyy = 470, r = 105;
     const g = ctx.createRadialGradient(cx - 35, cyy - 40, 10, cx, cyy, r);
     g.addColorStop(0, '#FF7675');
@@ -590,7 +697,6 @@
     ctx.font = font(20, 'bold');
     ctx.fillText(evaluation(), cx, cyy + r + 88);
 
-    /* tombol main lagi */
     const bw = 250, bh = 58;
     const bx = cx - bw / 2;
     const by = CARD.y + CARD.h - PAD - bh;
@@ -749,7 +855,7 @@
     const dpr = window.devicePixelRatio || 1;
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // semua koordinat tetap 0..900
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     draw();
   }
 
