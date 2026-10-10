@@ -227,7 +227,7 @@
     },
     {
       level: '🧑‍🎓 LEVEL SMP',
-      question: 'Dalam sebuah gedung pertunjukan, baris pertama berisi 15 kursi, baris kedua 19 kursi, baris ketiga 23 kursi, dan seterusnya bertambah tetap. Jumlah seluruh kursi jika gedung memiliki 20 baris adalah...',
+      question: 'Dalam sebuah gedung pertunjukan milik Hatta Muhammad Ahsan, baris pertama berisi 15 kursi, baris kedua 19 kursi, baris ketiga 23 kursi, dan seterusnya bertambah tetap. Jumlah seluruh kursi jika gedung memiliki 20 baris adalah...',
       options: [
         { text: 'A. 920', isCorrect: false, reason: 'Hasil perhitungan yang benar adalah 1.060.' },
         { text: 'B. 1.060', isCorrect: true,  reason: 'Barisan aritmatika dengan a=15, b=4, n=20. Sn = n/2 (2a + (n-1)b) = 10 (30 + 19*4) = 10 (30 + 76) = 10 * 106 = 1.060.' },
